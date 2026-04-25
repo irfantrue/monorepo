@@ -10,12 +10,11 @@ This is a **Bun-powered Turborepo monorepo** for microservices backend services.
 
 ```
 apps/               # Microservices (executable applications)
-  └── gateway/      # API Gateway service (Hono)
+  └── gateway/      # API Gateway (Hono framework)
 packages/           # Shared libraries
   ├── env/          # Zod-based environment validation
-  ├── logger/      # Winston-based logging
-  ├── eslint-config/
-  └── typescript-config/
+  ├── logger/       # Winston-based logging
+  └── typescript-config/ # TypeScript base configs
 ```
 
 ## Common Commands
@@ -27,10 +26,10 @@ bun install
 # Build all apps and packages
 bun run build
 
-# Develop all apps (runs on ports defined in each app)
-bun run dev
+# Build single app (auto-builds dependencies first)
+bun run build --filter=gateway
 
-# Run a single app
+# Develop single app with hot reload
 bun run dev --filter=gateway
 
 # Lint all
@@ -39,64 +38,91 @@ bun run lint
 # Format all
 bun run format
 
-# Type check all
+# Type check all (auto-builds packages first)
 bun run check-types
 
 # Clean build outputs
 bun run clean
 
-# Deep clean (including node_modules, .turbo, dist)
+# Deep clean (node_modules, .turbo, dist)
 bun run clean:deep
+
+# Filter commands work for packages too
+bun run check-types --filter=@repo/env
 ```
 
 ## Package Structure
 
 ### Apps (Microservices)
 
-Each app in `apps/` follows this pattern:
+Each app in `apps/` requires:
 - `src/index.ts` - Main entry point
 - `src/config/env.ts` - Environment validation extending `@repo/env`
 - `package.json` - Dependencies and scripts
 - `tsconfig.json` - Extends `@repo/typescript-config/base.json`
 - `.env` - Environment variables
 
+Gateway app uses Hono framework with CORS and secureHeaders middleware. Exports `{ port, fetch }` for Bun's serve().
+
 ### Packages (Shared Libraries)
 
-Each package in `packages/` follows this pattern:
+Each package in `packages/` has:
 - `src/` - Source code
-- `dist/` - Built output (ESM + .d.ts)
-- `package.json` - With build scripts using Bun
+- `dist/` - Built output (ESM bundle + .d.ts)
+- `package.json` - Build scripts using Bun
 - `tsconfig.json` - Extends base config with `rootDir: "src"`
 
-Libraries must be built before apps can use them - Turborepo handles this via `dependsOn: ["^build"]` in turbo.json.
+**Important:** Libraries must be built before apps can use them. Turborepo handles this via `dependsOn: ["^build"]` in turbo.json - running any app command automatically builds its dependencies.
 
 ## Shared Packages
 
 ### @repo/env
-Environment variable validation using Zod. Import and extend:
+Zod-based environment validation. Runtime dependency (zod v4) is centralized in root package.json:
 ```typescript
 import { baseEnvSchema } from '@repo/env'
+import { z } from 'zod'
+
 const envSchema = baseEnvSchema.extend({
   SERVICE_NAME: z.literal('gateway').default('gateway'),
   JWT_SECRET: z.string().min(32),
 })
-const env = envSchema.parse(process.env)
+
+const parsed = envSchema.safeParse(process.env)
+if (!parsed.success) {
+  console.error('Invalid env:', parsed.error.issues)
+  process.exit(1)
+}
+export const env = parsed.data
 ```
 
 ### @repo/logger
-Winston-based logger. Import and configure:
+Winston-based logging with configurable level, format, and service name:
 ```typescript
 import { logger, createLogger } from '@repo/logger'
+
+// Default logger
 logger.info('message')
-const custom = createLogger({ level: 'debug', service: 'my-service' })
+
+// Custom instance
+const custom = createLogger({
+  level: 'debug',
+  format: 'pretty',
+  service: 'my-service'
+})
 ```
+
+## Dependency Management
+
+- **Shared dependencies** (zod) are in root `package.json` under `dependencies` - Bun hoists them to root node_modules
+- **App-specific dependencies** are in each app's package.json
+- **devDependencies** for tooling (typescript, oxlint, turbo) are in root
 
 ## Configuration Notes
 
 - **TypeScript 6.x** with strict mode and `moduleResolution: Bundler`
-- **Bun** as package manager - use `bun run` not `bunx` for local scripts
+- **Bun** as package manager - use `bun run` for scripts, `bunx` only for global packages
 - **Turbo** runs tasks in topological order based on dependencies
-- **dev task**: `persistent: true` keeps server running, auto-builds dependencies first
+- **dev task**: `persistent: true` keeps server running; `dependsOn: ["^build"]` auto-builds dependencies first
 - **check-types task**: Automatically builds packages before type-checking apps
 
 ## Environment Variables
@@ -105,3 +131,5 @@ Each app has its own `.env` file. Load with `bun --dotenv=.env`:
 ```json
 "dev": "bun --dotenv=.env --hot src/index.ts"
 ```
+
+Base env schema provides: NODE_ENV, SERVICE_NAME, LOG_LEVEL, LOG_FORMAT, PORT, SHUTDOWN_TIMEOUT
