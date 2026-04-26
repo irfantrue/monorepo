@@ -1,6 +1,5 @@
 import type { SendEmailJobDto } from '@domain/dtos/send-email.dto'
 import type { IMailer } from '@domain/interface/IMailer'
-import type { INotificationRepository } from '@domain/interface/INotificationRepository'
 import type { ITemplateEngine } from '@domain/interface/ITemplateEngine'
 
 import { logger } from '@shared/logger'
@@ -8,7 +7,6 @@ import { uuidv7 } from 'zod'
 
 interface Deps {
     mailer: IMailer
-    repo: INotificationRepository
     template: ITemplateEngine
 }
 
@@ -23,7 +21,7 @@ export class SendEmailUseCase {
 
         try {
             // Compile template -> html -> extract subject
-            const html = await template.compile(dto.slug, dto.vars)
+            const html = await template.compile(dto.templateSlug, dto.vars)
             const subject = dto.vars['subject'] ?? dto.templateSlug
 
             // Send email

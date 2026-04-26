@@ -4,6 +4,10 @@ import { z } from 'zod'
 const envSchema = baseEnvSchema.extend({
     SERVICE_NAME: z.literal('notification-service').default('notification-service'),
 
+    // RabbitMQ
+    RABBITMQ_URL: z.url(),
+    RABBITMQ_QUEUE: z.string().default('notification.email'),
+
     // Nodemailer
     SMTP_HOST: z.string().min(1),
     SMTP_FROM: z.string().min(1),

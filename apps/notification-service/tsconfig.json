@@ -4,7 +4,7 @@
         "baseUrl": ".",
         "outDir": "dist",
         "strictNullChecks": true,
-        "types": ["@types/bun", "@glint/ember-tsc/types"],
+        "types": ["@types/bun"],
         "paths": {
             "@/*": ["src/*"],
             "@config/*": ["src/config/*"],

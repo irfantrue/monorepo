@@ -3,6 +3,7 @@ import { logger } from '@shared/logger'
 
 import { HandlebarsAdapter } from './infrastructure/mailer/handlebars.adapter'
 import { NodemailerAdapter } from './infrastructure/mailer/nodemailer.adapter'
+import { RabbitMQConsumer } from './infrastructure/queue/rabbitmq.consumer'
 import { router } from './router'
 import { SendEmailUseCase } from './use-cases/send-email.use-case'
 
@@ -19,12 +20,16 @@ async function bootstrap() {
     const sendEmailUseCase = new SendEmailUseCase({ mailer, template })
 
     // Start RabbitMQ consumer
+    const consumer = new RabbitMQConsumer(sendEmailUseCase)
+    await consumer.connect()
+    await consumer.consume()
 
     log.info(`Notification service running on http://localhost:${env.PORT}`)
 
     // Graceful shutdown
     const shutdown = async (signal: string) => {
         log.info('shutting down...', { signal })
+        await consumer.close()
         process.exit(0)
     }
 
