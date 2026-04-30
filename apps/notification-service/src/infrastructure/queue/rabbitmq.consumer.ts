@@ -1,10 +1,9 @@
-import type { SendEmailUseCase } from '@use-cases/send-email.use-case'
+import type { ISendEmailUseCase } from '@/domain/interface/ISendEmailUseCase'
 
 import { env } from '@config/env'
+import { SendEmailJobSchema } from '@domain/dtos/send-email.dto'
 import { logger } from '@shared/logger'
 import amqplib, { type Channel } from 'amqplib'
-
-import { SendEmailJobSchema } from '@/domain/dtos/send-email.dto'
 
 const log = logger.child({ module: 'RabbitMQConsumer' })
 
@@ -12,7 +11,7 @@ export class RabbitMQConsumer {
     private connection: Awaited<ReturnType<typeof amqplib.connect>> | undefined
     private channel: Channel | undefined
 
-    constructor(private readonly useCase: SendEmailUseCase) {}
+    constructor(private readonly useCase: ISendEmailUseCase) {}
 
     async connect(): Promise<void> {
         this.connection = await amqplib.connect(env.RABBITMQ_URL)

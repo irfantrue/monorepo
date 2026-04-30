@@ -13,7 +13,7 @@ export interface LoggerConfig {
 }
 
 export function createLogger(config: LoggerConfig = {}): winston.Logger {
-    const level = config.level ?? 'info'
+    const level = config.level ?? 'debug'
     const formatType = config.format ?? 'pretty'
     const silent = config.silent ?? false
 

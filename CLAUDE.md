@@ -4,13 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **Bun-powered Turborepo monorepo** for microservices backend services. Uses Turborepo for build orchestration, Bun for package management and runtime, oxlint/oxfmt for linting and formatting, and TypeScript with strict mode.
+This is a **pnpm-powered Turborepo monorepo** for microservices backend services. Uses Turborepo for build orchestration, pnpm for package management, SWC for TypeScript transpilation, oxlint/oxfmt for linting and formatting, and TypeScript with strict mode.
 
 ## Architecture
 
 ```
 apps/                          # Microservices (executable applications)
-  └── notification-service/    # Notification service (Hono framework)
+  ├── notification-service/    # Notification service (Hono framework)
+  └── user-service/             # User service (Hono framework)
 packages/                      # Shared libraries
   ├── env/                     # Zod-based environment validation
   ├── logger/                  # Winston-based logging
@@ -21,34 +22,34 @@ packages/                      # Shared libraries
 
 ```bash
 # Install dependencies
-bun install
+pnpm install
 
 # Build all apps and packages
-bun run build
+pnpm run build
 
 # Build single app (auto-builds dependencies first)
-bun run build --filter=notification-service
+pnpm run build --filter=notification-service
 
 # Develop single app with hot reload
-bun run dev --filter=notification-service
+pnpm run dev --filter=notification-service
 
 # Lint all
-bun run lint
+pnpm run lint
 
 # Format all
-bun run format
+pnpm run format
 
 # Type check all (auto-builds packages first)
-bun run check-types
+pnpm run check-types
 
 # Clean build outputs
-bun run clean
+pnpm run clean
 
 # Deep clean (node_modules, .turbo, dist)
-bun run clean:deep
+pnpm run clean:deep
 
 # Filter commands work for packages too
-bun run check-types --filter=@repo/env
+pnpm run check-types --filter=@repo/env
 ```
 
 ## Package Structure
@@ -60,17 +61,19 @@ Each app in `apps/` requires:
 - `src/config/env.ts` - Environment validation extending `@repo/env`
 - `package.json` - Dependencies and scripts
 - `tsconfig.json` - Extends `@repo/typescript-config/base.json`
+- `.swcrc` - SWC transpiler configuration
 - `.env` - Environment variables
 
-Notification service uses Hono framework with CORS and secureHeaders middleware. Exports `{ port, fetch }` for Bun's serve().
+Notification service uses Hono framework with CORS and secureHeaders middleware. Exports `{ port, fetch }` for Node.js serve().
 
 ### Packages (Shared Libraries)
 
 Each package in `packages/` has:
 - `src/` - Source code
-- `dist/` - Built output (ESM bundle + .d.ts)
-- `package.json` - Build scripts using Bun
+- `dist/` - Built output (ESM transpiled + .d.ts)
+- `package.json` - Build scripts using SWC
 - `tsconfig.json` - Extends base config with `rootDir: "src"`
+- `.swcrc` - SWC transpiler configuration
 
 **Important:** Libraries must be built before apps can use them. Turborepo handles this via `dependsOn: ["^build"]` in turbo.json - running any app command automatically builds its dependencies.
 
@@ -113,23 +116,23 @@ const custom = createLogger({
 
 ## Dependency Management
 
-- **Shared dependencies** (zod) are in root `package.json` under `dependencies` - Bun hoists them to root node_modules
+- **Shared dependencies** (zod) are in root `package.json` under `dependencies` - pnpm hoists them to root node_modules
 - **App-specific dependencies** are in each app's package.json
 - **devDependencies** for tooling (typescript, oxlint, turbo) are in root
 
 ## Configuration Notes
 
 - **TypeScript 6.x** with strict mode and `moduleResolution: Bundler`
-- **Bun** as package manager - use `bun run` for scripts, `bunx` only for global packages
+- **pnpm** as package manager - use `pnpm run` for scripts, `pnpm exec` for one-off commands
 - **Turbo** runs tasks in topological order based on dependencies
 - **dev task**: `persistent: true` keeps server running; `dependsOn: ["^build"]` auto-builds dependencies first
 - **check-types task**: Automatically builds packages before type-checking apps
 
 ## Environment Variables
 
-Each app has its own `.env` file. Load with `bun --dotenv=.env`:
+Each app has its own `.env` file. Load with `node --env-file=.env`:
 ```json
-"dev": "bun --dotenv=.env --hot src/index.ts"
+"dev": "node --env-file=.env --watch src/index.ts"
 ```
 
 Base env schema provides: NODE_ENV, SERVICE_NAME, LOG_LEVEL, LOG_FORMAT, PORT, SHUTDOWN_TIMEOUT

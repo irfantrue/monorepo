@@ -1,6 +1,7 @@
-import type { SendEmailJobDto } from '@domain/dtos/send-email.dto'
-import type { IMailer } from '@domain/interface/IMailer'
-import type { ITemplateEngine } from '@domain/interface/ITemplateEngine'
+import type { SendEmailJobDto } from '@/domain/dtos/send-email.dto'
+import type { IMailer } from '@/domain/interface/IMailer'
+import type { ITemplateEngine } from '@/domain/interface/ITemplateEngine'
+import type { ISendEmailUseCase } from '@/domain/interface/ISendEmailUseCase'
 
 import { logger } from '@shared/logger'
 import { uuidv7 } from 'zod'
@@ -12,7 +13,7 @@ interface Deps {
 
 const log = logger.child({ module: 'SendEmailUseCase' })
 
-export class SendEmailUseCase {
+export class SendEmailUseCase implements ISendEmailUseCase {
     constructor(private readonly deps: Deps) {}
 
     async execute(dto: SendEmailJobDto): Promise<void> {

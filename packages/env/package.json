@@ -3,17 +3,23 @@
     "version": "0.1.0",
     "private": true,
     "type": "module",
-    "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
         ".": {
+            "types": "./dist/index.d.ts",
             "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
+            "require": "./dist/index.js"
+        },
+        "./base": {
+            "types": "./dist/base.d.ts",
+            "import": "./dist/base.js",
+            "require": "./dist/base.js"
         }
     },
     "scripts": {
-        "build": "bun build ./src/index.ts --outdir=dist --format=esm --target=node && bun build:types",
-        "build:types": "tsc --declaration --declarationMap",
+        "build": "bun clean && bun run build:types && bun run build:js",
+        "build:types": "tsc",
+        "build:js": "bun build src/index.ts --outdir=dist --format=esm --target=bun",
         "lint": "oxlint .",
         "format": "oxfmt --write",
         "check-types": "tsc --noEmit",

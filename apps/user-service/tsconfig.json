@@ -2,16 +2,12 @@
     "extends": "@repo/typescript-config/base.json",
     "compilerOptions": {
         "baseUrl": ".",
-        "rootDir": "src",
-        "outDir": "dist",
         "strictNullChecks": true,
-        "emitDeclarationOnly": true,
-        "declaration": true,
-        "declarationMap": true,
-        "types": ["@types/node"],
+        "types": ["@types/node", "@types/bun"],
         "paths": {
             "@/*": ["src/*"],
-            "@config/*": ["src/config/*"],
+            "@config/*": ["config/*"],
+            "@db/*": ["db/*"],
             "@shared/*": ["src/shared/*"],
             "@domain/*": ["src/domain/*"],
             "@use-case/*": ["src/use-case/*"],
@@ -19,6 +15,6 @@
         },
         "ignoreDeprecations": "6.0"
     },
-    "include": ["src"],
+    "include": ["src", "config", "db", "scripts"],
     "exclude": ["node_modules", "dist", ".turbo"]
 }

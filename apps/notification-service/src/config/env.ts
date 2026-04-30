@@ -17,7 +17,7 @@ const envSchema = baseEnvSchema.extend({
     SMTP_AUTH_PASS: z.string().min(1),
 })
 
-const parsedEnv = envSchema.safeParse(Bun.env)
+const parsedEnv = envSchema.safeParse(process.env)
 
 if (!parsedEnv.success) {
     console.error('Invalid environment variables:')
