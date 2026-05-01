@@ -6,7 +6,8 @@
         "dev": "DOTENV_CONFIG_PATH=.env.development bun --hot src/index.ts",
         "build": "bun run clean && bun run build:compile",
         "build:compile": "bun build src/index.ts --outfile user-service --bytecode --format=esm --compile --target=bun --minify",
-        "db:generate": "DOTENV_CONFIG_PATH=.env.development drizzle-kit generate --config=scripts/drizzle.config.ts",
+        "db:check": "DOTENV_CONFIG_PATH=.env.development drizzle-kit check --config=scripts/drizzle.config.ts",
+        "db:push": "DOTENV_CONFIG_PATH=.env.development drizzle-kit push --config=scripts/drizzle.config.ts",
         "lint": "oxlint .",
         "format": "oxfmt --write",
         "check-types": "tsc --noEmit",
@@ -19,7 +20,6 @@
         "jose": "^6.2.3"
     },
     "devDependencies": {
-        "@repo/typescript-config": "*",
-        "drizzle-kit": "^0.31.10"
+        "@repo/typescript-config": "*"
     }
 }

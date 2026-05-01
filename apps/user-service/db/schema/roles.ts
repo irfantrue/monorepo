@@ -11,7 +11,7 @@ export const roles = authSchema.table(
         id: p
             .uuid('id')
             .primaryKey()
-            .default(sql`uuid_generate_v7()`),
+            .default(sql`uuidv7()`),
         name: p.varchar('name', { length: 50 }).notNull().unique(),
         display: p.varchar('display', { length: 100 }).notNull(),
         inherits: p

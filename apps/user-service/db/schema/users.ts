@@ -19,7 +19,7 @@ export const users = authSchema.table(
         id: p
             .uuid('id')
             .primaryKey()
-            .default(sql`uuid_generate_v7()`),
+            .default(sql`uuidv7()`),
         name: p.varchar('name', { length: 100 }).notNull(),
         email: citext('email').notNull(),
         passwordHash: p.varchar('password_hash', { length: 255 }).notNull(),
