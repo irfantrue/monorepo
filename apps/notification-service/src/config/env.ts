@@ -1,4 +1,4 @@
-import { baseEnvSchema } from '@repo/env'
+import { baseEnvSchema } from '@repo/config'
 import { z } from 'zod'
 
 const envSchema = baseEnvSchema.extend({

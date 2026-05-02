@@ -12,20 +12,17 @@ export const rolePermissions = authSchema.table(
     'role_permissions',
     {
         roleId: p
-            .uuid('role_id')
+            .uuid()
             .notNull()
             .references((): AnyPgColumn => roles.id, { onDelete: 'cascade' }),
         permissionId: p
-            .uuid('permission_id')
+            .uuid()
             .notNull()
             .references((): AnyPgColumn => permissions.id, { onDelete: 'cascade' }),
-        grantedBy: p
-            .uuid('granted_by')
-            .notNull()
-            .references((): AnyPgColumn => users.id, { onDelete: 'set null' }),
-        grantedAt: p.timestamp('granted_at', { withTimezone: true }).notNull().defaultNow(),
-        isActive: p.boolean('is_active').notNull().default(true),
-        notes: p.varchar('notes', { length: 500 }),
+        grantedBy: p.uuid().references((): AnyPgColumn => users.id, { onDelete: 'set null' }),
+        grantedAt: p.timestamp({ withTimezone: true }).notNull().defaultNow(),
+        isActive: p.boolean().notNull().default(true),
+        notes: p.varchar({ length: 500 }),
     },
     t => [
         p.primaryKey({ columns: [t.roleId, t.permissionId] }),

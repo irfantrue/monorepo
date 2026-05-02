@@ -1,43 +1,77 @@
-import { relations } from 'drizzle-orm'
+import { defineRelationsPart } from 'drizzle-orm'
 
 import { permissions } from './permissions'
 import { rolePermissions } from './role_permissions'
 import { roles } from './roles'
 import { users } from './users'
 
-export const usersRelations = relations(users, ({ one }) => ({
-    role: one(roles, {
-        fields: [users.roleId],
-        references: [roles.id],
-    }),
+const userRelations = defineRelationsPart({ users, roles }, r => ({
+    users: {
+        roles: r.one.roles({
+            from: r.users.roleId,
+            to: r.roles.id,
+        }),
+    },
 }))
 
-export const rolesRelations = relations(roles, ({ one, many }) => ({
-    users: many(users),
-    rolePermissions: many(rolePermissions),
-    inheritsTo: one(roles, {
-        fields: [roles.inherits],
-        references: [roles.id],
-        relationName: 'roleInheritance',
-    }),
+const roleRelations = defineRelationsPart({ users, roles, rolePermissions, permissions }, r => ({
+    roles: {
+        users: r.many.users({
+            from: r.roles.id,
+            to: r.users.roleId,
+        }),
+        rolePermissions: r.many.rolePermissions({
+            from: r.roles.id,
+            to: r.rolePermissions.roleId,
+        }),
+        permissions: r.many.permissions({
+            from: r.roles.id.through(r.rolePermissions.roleId),
+            to: r.permissions.id.through(r.rolePermissions.permissionId),
+        }),
+        roleInheritance: r.one.roles({
+            from: r.roles.inherits,
+            to: r.roles.id,
+        }),
+    },
 }))
 
-export const permissionsRelations = relations(permissions, ({ many }) => ({
-    rolePermissions: many(rolePermissions),
+const permissionRelations = defineRelationsPart({ permissions, rolePermissions, roles }, r => ({
+    permissions: {
+        rolePermissions: r.many.rolePermissions({
+            from: r.permissions.id,
+            to: r.rolePermissions.permissionId,
+        }),
+        roles: r.many.roles({
+            from: r.permissions.id.through(r.rolePermissions.permissionId),
+            to: r.roles.id.through(r.rolePermissions.roleId),
+        }),
+    },
 }))
 
-export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
-    role: one(roles, {
-        fields: [rolePermissions.roleId],
-        references: [roles.id],
+const rolePermissionRelations = defineRelationsPart(
+    { rolePermissions, roles, permissions, users },
+    r => ({
+        rolePermissions: {
+            roles: r.one.roles({
+                from: r.rolePermissions.roleId,
+                to: r.roles.id,
+            }),
+            permissions: r.one.permissions({
+                from: r.rolePermissions.permissionId,
+                to: r.permissions.id,
+            }),
+            grantedByUser: r.one.users({
+                from: r.rolePermissions.grantedBy,
+                to: r.users.id,
+                alias: 'grantedBy',
+            }),
+        },
     }),
-    permission: one(permissions, {
-        fields: [rolePermissions.permissionId],
-        references: [permissions.id],
-    }),
-    grantedByUser: one(users, {
-        fields: [rolePermissions.grantedBy],
-        references: [users.id],
-        relationName: 'grantedBy',
-    }),
-}))
+)
+
+export const relations = {
+    ...userRelations,
+    ...roleRelations,
+    ...permissionRelations,
+    ...rolePermissionRelations,
+}

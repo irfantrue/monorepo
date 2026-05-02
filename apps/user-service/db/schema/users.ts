@@ -17,22 +17,20 @@ export const users = authSchema.table(
     'users',
     {
         id: p
-            .uuid('id')
+            .uuid()
             .primaryKey()
             .default(sql`uuidv7()`),
-        name: p.varchar('name', { length: 100 }).notNull(),
-        email: citext('email').notNull(),
-        passwordHash: p.varchar('password_hash', { length: 255 }).notNull(),
-        roleId: p.uuid('role_id').references((): AnyPgColumn => roles.id, { onDelete: 'set null' }),
-        isActive: p.boolean('is_active').notNull().default(true),
-        isVerified: p.boolean('is_verified').notNull().default(false),
-        createdAt: p.timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-        updatedAt: p.timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-        lastLoginAt: p.timestamp('last_login_at', { withTimezone: true }),
-        emailVerifiedAt: p.timestamp('email_verified_at', { withTimezone: true }),
-        passwordChangeAt: p.timestamp('password_changed_at', {
-            withTimezone: true,
-        }),
+        name: p.varchar({ length: 100 }).notNull(),
+        email: citext().notNull(),
+        passwordHash: p.varchar({ length: 255 }).notNull(),
+        roleId: p.uuid().references((): AnyPgColumn => roles.id, { onDelete: 'set null' }),
+        isActive: p.boolean().notNull().default(true),
+        isVerified: p.boolean().notNull().default(false),
+        createdAt: p.timestamp({ withTimezone: true }).notNull().defaultNow(),
+        updatedAt: p.timestamp({ withTimezone: true }).notNull().defaultNow(),
+        lastLoginAt: p.timestamp({ withTimezone: true }),
+        emailVerifiedAt: p.timestamp({ withTimezone: true }),
+        passwordChangedAt: p.timestamp({ withTimezone: true }),
     },
     t => [
         p.uniqueIndex('idx_users_email').on(t.email),

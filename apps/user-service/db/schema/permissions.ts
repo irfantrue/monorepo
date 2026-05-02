@@ -7,17 +7,17 @@ export const permissions = authSchema.table(
     'permissions',
     {
         id: p
-            .uuid('id')
+            .uuid()
             .primaryKey()
             .default(sql`uuidv7()`),
-        name: p.varchar('name', { length: 100 }).notNull(),
-        resource: p.varchar('resource', { length: 50 }).notNull(),
-        action: p.varchar('action', { length: 50 }).notNull(),
-        description: p.varchar('description', { length: 255 }),
-        category: p.varchar('category', { length: 50 }),
-        isActive: p.boolean('is_active').notNull().default(true),
-        createdAt: p.timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-        updatedAt: p.timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+        name: p.varchar({ length: 100 }).notNull(),
+        resource: p.varchar({ length: 50 }).notNull(),
+        action: p.varchar({ length: 50 }).notNull(),
+        description: p.varchar({ length: 255 }),
+        category: p.varchar({ length: 50 }),
+        isActive: p.boolean().notNull().default(true),
+        createdAt: p.timestamp({ withTimezone: true }).notNull().defaultNow(),
+        updatedAt: p.timestamp({ withTimezone: true }).notNull().defaultNow(),
     },
     t => [
         p.uniqueIndex('idx_permissions_name').on(t.name),

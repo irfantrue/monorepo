@@ -9,16 +9,14 @@ export const roles = authSchema.table(
     'roles',
     {
         id: p
-            .uuid('id')
+            .uuid()
             .primaryKey()
             .default(sql`uuidv7()`),
-        name: p.varchar('name', { length: 50 }).notNull().unique(),
-        display: p.varchar('display', { length: 100 }).notNull(),
-        inherits: p
-            .uuid('inherits')
-            .references((): AnyPgColumn => roles.id, { onDelete: 'set null' }),
-        createdAt: p.timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-        updatedAt: p.timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+        name: p.varchar({ length: 50 }).notNull().unique(),
+        display: p.varchar({ length: 100 }).notNull(),
+        inherits: p.uuid().references((): AnyPgColumn => roles.id, { onDelete: 'set null' }),
+        createdAt: p.timestamp({ withTimezone: true }).notNull().defaultNow(),
+        updatedAt: p.timestamp({ withTimezone: true }).notNull().defaultNow(),
     },
     t => [
         p.index('idx_roles_inherits').on(t.inherits),
