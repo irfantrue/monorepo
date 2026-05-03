@@ -5,11 +5,11 @@
         "build": {
             "dependsOn": ["^build"],
             "inputs": ["$TURBO_DEFAULT$", ".env*"],
-            "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+            "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+            "description": "Compiles the application for production deployment"
         },
         "dev": {
             "dependsOn": ["^build"],
-            "inputs": ["$TURBO_DEFAULTS", ".env.development"],
             "cache": false,
             "persistent": true
         },
@@ -37,4 +37,3 @@
         }
     }
 }
-

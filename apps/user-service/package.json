@@ -3,12 +3,12 @@
     "version": "0.1.0",
     "type": "module",
     "scripts": {
-        "dev": "bun --bun --hot src/index.ts",
+        "dev": "bun --env-file=.env.development --bun --hot src/index.ts",
         "build": "bun run clean && bun run build:compile",
         "build:compile": "bun build src/index.ts --outfile user-service --bytecode --format=esm --compile --target=bun --minify",
-        "db:check": "bun drizzle-kit check",
-        "db:generate": "bun drizzle-kit generate",
-        "db:migrate": "bun drizzle-kit migrate",
+        "db:check": "bun --env-file=.env.development --bun drizzle-kit check",
+        "db:generate": "bun --env-file=.env.development --bun drizzle-kit generate",
+        "db:migrate": "bun --env-file=.env.development --bun drizzle-kit migrate",
         "lint": "oxlint .",
         "format": "oxfmt --write",
         "check-types": "tsc --noEmit",
@@ -27,4 +27,3 @@
         "drizzle-kit": "^1.0.0-rc.1"
     }
 }
-
