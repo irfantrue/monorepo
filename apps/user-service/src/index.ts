@@ -1,16 +1,20 @@
 import { env } from '@config/env'
-import { users } from '@db/schema/users'
-import { db } from '@infrastructure/db'
+import { NewRole } from '@db/schema/roles'
+import { Database, db } from '@infrastructure/db'
+import { RoleMapper } from '@infrastructure/mappers/role.mapper'
+import { PostgresRoleRepository } from '@infrastructure/repositories/postgres-role.repository'
 import { logger } from '@shared/logger'
+import { CreateRoleUseCase } from '@use-cases/rbac/role/create-role.use-case'
+import { Effect } from 'effect'
 
 const log = logger.child({ module: 'App' })
 
 log.debug('print env', { env })
 
-// const newRole: NewRole = {
-//     name: 'super_admin',
-//     display: 'Super Administrator',
-// }
+const newRole: NewRole = {
+    name: 'super_admin',
+    display: 'Super Administrator',
+}
 //
 // const resRole = await db.insert(roles).values(newRole).returning()
 //
@@ -45,21 +49,11 @@ log.debug('print env', { env })
 //
 // await db.insert(rolePermissions).values(newRolePermission)
 
-const query = db.select().from(users).limit(10).prepare()
+const dbTransaction = new Database(db)
 
-const listUsers = await query.execute()
-console.log(listUsers)
+const roleMapper = new RoleMapper()
+const roleRepository = new PostgresRoleRepository(roleMapper)
+const createRoleUseCase = new CreateRoleUseCase(dbTransaction, roleRepository)
 
-const manyUsers = await db.query.roles.findMany({
-    with: {
-        rolePermissions: {
-            where: {
-                isActive: true,
-            },
-            with: {
-                permissions: true,
-            },
-        },
-    },
-})
-console.log(manyUsers)
+const resultNewRole = await Effect.runPromise(createRoleUseCase.execute(newRole))
+log.debug('new role', { resultNewRole })

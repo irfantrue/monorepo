@@ -10,7 +10,7 @@
             "@db/*": ["db/*"],
             "@shared/*": ["src/shared/*"],
             "@domain/*": ["src/domain/*"],
-            "@use-case/*": ["src/use-case/*"],
+            "@use-cases/*": ["src/use-cases/*"],
             "@infrastructure/*": ["src/infrastructure/*"]
         },
         "noEmit": true,
