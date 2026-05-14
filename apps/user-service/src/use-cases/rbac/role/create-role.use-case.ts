@@ -2,14 +2,13 @@ import { CreateRoleRequest } from '@domain/dtos/role.dto'
 import { RoleAlreadyExistError } from '@domain/errors/role-already-exists.error'
 import { IRoleRepository } from '@domain/interfaces/role.repository.interface'
 import { ITransactionManager } from '@domain/interfaces/transaction-manager.interface'
-import { TransactionManager } from '@infrastructure/db'
 import { PostgresRoleRepository } from '@infrastructure/repositories/postgres-role.repository'
 
 export class CreateRoleUseCase {
     private readonly txm: ITransactionManager
     private readonly repo: IRoleRepository
 
-    constructor(txm: TransactionManager, repo: PostgresRoleRepository) {
+    constructor(txm: ITransactionManager, repo: PostgresRoleRepository) {
         this.txm = txm
         this.repo = repo
     }
