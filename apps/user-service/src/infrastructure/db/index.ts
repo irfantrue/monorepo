@@ -1,10 +1,9 @@
 import { env } from '@config/env'
 import { relations } from '@db/schema/relations'
-import { DatabaseError } from '@shared/errors/database.error'
-import { TransactionEffect, Tx } from '@shared/types/database'
+import { ITransactionManager } from '@domain/interfaces/transaction-manager.interface'
+import { Database, Tx } from '@shared/types/database'
 import { SQL } from 'bun'
 import { drizzle } from 'drizzle-orm/bun-sql'
-import { Effect } from 'effect'
 
 // Bun SQL has built-in connection pooling
 const client = new SQL({
@@ -19,19 +18,11 @@ const client = new SQL({
 })
 
 export const db = drizzle({ client, jit: true, relations })
-export type Db = typeof db
 
-export class Database {
-    constructor(private readonly db: Db) {}
+export class TransactionManager implements ITransactionManager {
+    constructor(private readonly db: Database) {}
 
-    transaction<A>(fn: (tx: Tx) => TransactionEffect<A>): TransactionEffect<A> {
-        return Effect.tryPromise({
-            try: () => {
-                return this.db.transaction(tx => Effect.runPromise(fn(tx)))
-            },
-            catch: error => {
-                return new DatabaseError({ cause: error instanceof Error ? error : undefined })
-            },
-        })
+    async transaction<A>(fn: (tx: Tx) => Promise<A>): Promise<A> {
+        return this.db.transaction(tx => fn(tx))
     }
 }

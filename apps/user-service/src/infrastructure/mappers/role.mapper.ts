@@ -1,6 +1,5 @@
-import { rolePermissions } from '@db/schema/role_permissions'
 import { RoleRow } from '@db/schema/roles'
-import { Role, RoleWithPermissions } from '@domain/dtos/role.dto'
+import { Role, RoleWithPermissions } from '@domain/entities/role.entity'
 import { IRoleMapper } from '@domain/interfaces/role.mapper.interface'
 import { RoleWithPermissionRow } from '@domain/mappers/role.mapper'
 

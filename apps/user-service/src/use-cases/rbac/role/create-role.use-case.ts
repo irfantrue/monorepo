@@ -1,22 +1,28 @@
-import { NewRole } from '@db/schema/roles'
-import { Database } from '@infrastructure/db'
+import { CreateRoleRequest } from '@domain/dtos/role.dto'
+import { RoleAlreadyExistError } from '@domain/errors/role-already-exists.error'
+import { IRoleRepository } from '@domain/interfaces/role.repository.interface'
+import { ITransactionManager } from '@domain/interfaces/transaction-manager.interface'
+import { TransactionManager } from '@infrastructure/db'
 import { PostgresRoleRepository } from '@infrastructure/repositories/postgres-role.repository'
-import { Effect } from 'effect'
 
 export class CreateRoleUseCase {
-    private readonly db: Database
-    private readonly repo: PostgresRoleRepository
+    private readonly txm: ITransactionManager
+    private readonly repo: IRoleRepository
 
-    constructor(db: Database, repo: PostgresRoleRepository) {
-        this.db = db
+    constructor(txm: TransactionManager, repo: PostgresRoleRepository) {
+        this.txm = txm
         this.repo = repo
     }
 
-    execute(data: NewRole) {
-        return this.db.transaction(tx => {
-            return Effect.gen(this, function* () {
-                return yield* this.repo.create(tx, data)
-            })
+    async execute(req: CreateRoleRequest) {
+        return this.txm.transaction(async tx => {
+            const existing = await this.repo.findByName(req.name, tx)
+
+            if (existing) {
+                throw new RoleAlreadyExistError({ context: { name: req.name } })
+            }
+
+            return this.repo.create(req, tx)
         })
     }
 }
