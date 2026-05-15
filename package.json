@@ -20,6 +20,7 @@
         "test": "turbo run test"
     },
     "dependencies": {
+        "@vinejs/vine": "^4.4.0",
         "zod": "^4.3.6"
     },
     "devDependencies": {

@@ -1,12 +1,13 @@
+import { CreateRoleUseCase } from '@application/use-cases/rbac/create-role.use-case'
 import { env } from '@config/env'
+import { ValidationError } from '@domain/errors/validation.error'
 import { db, TransactionManager } from '@infrastructure/db'
 import { RoleMapper } from '@infrastructure/mappers/role.mapper'
 import { PostgresRoleRepository } from '@infrastructure/repositories/postgres-role.repository'
+import { createRbacHandler } from '@presentation/handlers/rbac.handler'
 import { logger } from '@shared/logger'
-import { CreateRoleUseCase } from '@use-cases/rbac/role/create-role.use-case'
 import { Hono } from 'hono/tiny'
-
-import { createRbacHandler } from './presentation/rbac.handler'
+import { ContentfulStatusCode } from 'hono/utils/http-status'
 
 const log = logger.child({ module: 'App' })
 
@@ -26,7 +27,15 @@ async function bootstrap() {
     app.get('/health', c => c.json({ status: 'ok', service: 'user-service' }))
     app.notFound(c => c.json({ error: 'Not Found' }, 404))
     app.onError((err, c) => {
+        if (err instanceof ValidationError) {
+            return c.json(
+                { error: 'Validation Error', details: err.context.issues },
+                err.statusCode as ContentfulStatusCode,
+            )
+        }
+
         log.error('unhandled error', { err })
+
         return c.json({ error: 'Internal Server Error' }, 500)
     })
 

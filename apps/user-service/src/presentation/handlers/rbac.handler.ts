@@ -1,6 +1,6 @@
-import { createRoleSchema } from '@domain/dtos/role.dto'
-import { zValidator } from '@hono/zod-validator'
-import { CreateRoleUseCase } from '@use-cases/rbac/role/create-role.use-case'
+import { CreateRoleUseCase } from '@application/use-cases/rbac/create-role.use-case'
+import { validate } from '@presentation/middlewares/validate'
+import { createRoleSchema } from '@shared/contracts/role.contract'
 import { Hono } from 'hono'
 
 interface Deps {
@@ -10,7 +10,7 @@ interface Deps {
 export function createRbacHandler(deps: Deps) {
     const app = new Hono()
 
-    app.post('roles', zValidator('json', createRoleSchema), async c => {
+    app.post('roles', validate(createRoleSchema), async c => {
         const dto = c.req.valid('json')
         const role = await deps.createRole.execute(dto)
         return c.json({ data: role }, 201)

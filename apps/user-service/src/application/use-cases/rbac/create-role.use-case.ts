@@ -1,8 +1,8 @@
-import { CreateRoleRequest } from '@domain/dtos/role.dto'
 import { RoleAlreadyExistError } from '@domain/errors/role-already-exists.error'
 import { IRoleRepository } from '@domain/interfaces/role.repository.interface'
 import { ITransactionManager } from '@domain/interfaces/transaction-manager.interface'
 import { PostgresRoleRepository } from '@infrastructure/repositories/postgres-role.repository'
+import { CreateRoleDto } from '@shared/contracts/role.contract'
 
 export class CreateRoleUseCase {
     private readonly txm: ITransactionManager
@@ -13,7 +13,7 @@ export class CreateRoleUseCase {
         this.repo = repo
     }
 
-    async execute(req: CreateRoleRequest) {
+    async execute(req: CreateRoleDto) {
         return this.txm.transaction(async tx => {
             const existing = await this.repo.findByName(req.name, tx)
 

@@ -9,10 +9,10 @@ export interface BaseErrorOptions {
     cause?: Error
 }
 
-export class BaseError extends Error {
+export class BaseError<TContext = Record<string, unknown>> extends Error {
     readonly code: string
     readonly statusCode: number
-    readonly context: Record<string, unknown>
+    readonly context: TContext
     override readonly cause?: Error
 
     constructor(message: string, options: BaseErrorOptions = {}) {
@@ -25,7 +25,7 @@ export class BaseError extends Error {
         this.name = new.target.name
         this.code = options.code ?? 'INTERNAL_ERROR'
         this.statusCode = options.statusCode ?? 500
-        this.context = options.context ?? {}
+        this.context = options.context as TContext
         this.cause = options.cause
 
         // Maintain proper V8 stack trace

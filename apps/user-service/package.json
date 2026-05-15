@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "type": "module",
     "scripts": {
-        "dev": "bun --env-file=.env.development --bun --hot src/index.ts",
+        "dev": "bun --env-file=.env.development --bun --watch src/index.ts",
         "build": "bun run clean && bun run build:compile",
         "build:compile": "bun build src/index.ts --outfile user-service --bytecode --format=esm --compile --target=bun --minify --tsconfig tsconfig.build.json",
         "db:check": "bun --env-file=.env.development --bun drizzle-kit check",
@@ -17,17 +17,17 @@
         "test": "bun --bun vitest"
     },
     "dependencies": {
-        "@hono/zod-validator": "^0.8.0",
+        "@hono/standard-validator": "^0.2.2",
         "@repo/config": "*",
         "@repo/logger": "*",
         "drizzle-orm": "^1.0.0-rc.1",
-        "effect": "^3.21.2",
         "hono": "^4.12.16",
         "ioredis": "^5.10.1",
         "jose": "^6.2.3"
     },
     "devDependencies": {
         "@repo/typescript-config": "*",
+        "@standard-schema/spec": "^1.1.0",
         "drizzle-kit": "^1.0.0-rc.1"
     }
 }
