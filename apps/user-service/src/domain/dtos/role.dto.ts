@@ -1,12 +1,9 @@
-export interface CreateRoleRequest {
-    name: string
-    display: string
-}
+import { z } from 'zod'
 
-export interface RoleDto {
-    id: string
-    name: string
-    display: string
-    createdAt: string // ISO string
-    updatedAt: string
-}
+export const createRoleSchema = z.object({
+    name: z.string().min(1).max(50),
+    display: z.string().min(1).max(100),
+    inherits: z.uuidv7().optional(),
+})
+
+export type CreateRoleDto = z.infer<typeof createRoleSchema>

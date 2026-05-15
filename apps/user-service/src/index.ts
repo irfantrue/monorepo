@@ -1,59 +1,46 @@
 import { env } from '@config/env'
-import { NewRole } from '@db/schema/roles'
-import { Database, db } from '@infrastructure/db'
+import { db, TransactionManager } from '@infrastructure/db'
 import { RoleMapper } from '@infrastructure/mappers/role.mapper'
 import { PostgresRoleRepository } from '@infrastructure/repositories/postgres-role.repository'
 import { logger } from '@shared/logger'
 import { CreateRoleUseCase } from '@use-cases/rbac/role/create-role.use-case'
-import { Effect } from 'effect'
+import { Hono } from 'hono/tiny'
+
+import { createRbacHandler } from './presentation/rbac.handler'
 
 const log = logger.child({ module: 'App' })
 
-log.debug('print env', { env })
+async function bootstrap() {
+    const roleMapper = new RoleMapper()
 
-const newRole: NewRole = {
-    name: 'super_admin',
-    display: 'Super Administrator',
+    const roleRepo = new PostgresRoleRepository(db, roleMapper)
+
+    const transactionManager = new TransactionManager(db)
+
+    const createRole = new CreateRoleUseCase(transactionManager, roleRepo)
+
+    const app = new Hono()
+
+    app.route('/rbac', createRbacHandler({ createRole }))
+
+    app.get('/health', c => c.json({ status: 'ok', service: 'user-service' }))
+    app.notFound(c => c.json({ error: 'Not Found' }, 404))
+    app.onError((err, c) => {
+        log.error('unhandled error', { err })
+        return c.json({ error: 'Internal Server Error' }, 500)
+    })
+
+    const shutdown = async (signal: string) => {
+        log.info('shutting down...', { signal })
+        process.exit(0)
+    }
+
+    process.on('SIGTERM', () => shutdown('SIGTERM'))
+    process.on('SIGINT', () => shutdown('SIGINT'))
+
+    log.info(`User service running on http://localhost:${env.PORT}`)
+
+    return { port: env.PORT, fetch: app.fetch }
 }
-//
-// const resRole = await db.insert(roles).values(newRole).returning()
-//
-// const newPermission: NewPermission = {
-//     name: '*:*',
-//     resource: '*',
-//     action: '*',
-//     description: 'Full system access(super admin)',
-//     category: 'system',
-//     isActive: true,
-// }
-//
-// const resPermission = await db.insert(permissions).values(newPermission).returning()
-//
-// const newUser: NewUser = {
-//     name: 'Super Admin',
-//     email: 'superadmin@example.com',
-//     passwordHash: '$2a$12$TKh8H1.PfQx37YgCxDfOuCV34r5B1Y6VtbxWYXi9K2QpZ1D7E3mFO',
-//     roleId: resRole[0]!.id,
-//     isActive: true,
-//     isVerified: false,
-// }
-//
-// const resUser = await db.insert(users).values(newUser).returning()
-//
-// const newRolePermission: NewRolePermission = {
-//     roleId: resRole[0]!.id,
-//     permissionId: resPermission[0]!.id,
-//     grantedBy: resUser[0]!.id,
-//     isActive: true,
-// }
-//
-// await db.insert(rolePermissions).values(newRolePermission)
 
-const dbTransaction = new Database(db)
-
-const roleMapper = new RoleMapper()
-const roleRepository = new PostgresRoleRepository(roleMapper)
-const createRoleUseCase = new CreateRoleUseCase(dbTransaction, roleRepository)
-
-const resultNewRole = await Effect.runPromise(createRoleUseCase.execute(newRole))
-log.debug('new role', { resultNewRole })
+export default await bootstrap()

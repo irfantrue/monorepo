@@ -17,6 +17,7 @@
         "test": "bun --bun vitest"
     },
     "dependencies": {
+        "@hono/zod-validator": "^0.8.0",
         "@repo/config": "*",
         "@repo/logger": "*",
         "drizzle-orm": "^1.0.0-rc.1",
