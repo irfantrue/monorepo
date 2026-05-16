@@ -1,4 +1,5 @@
 import { CreateRoleUseCase } from '@application/use-cases/rbac/create-role.use-case'
+import { FindAllRoleUseCase } from '@application/use-cases/rbac/find-all.use-case'
 import { env } from '@config/env'
 import { ValidationError } from '@domain/errors/validation.error'
 import { db, TransactionManager } from '@infrastructure/db'
@@ -19,10 +20,11 @@ async function bootstrap() {
     const transactionManager = new TransactionManager(db)
 
     const createRole = new CreateRoleUseCase(transactionManager, roleRepo)
+    const findAllRole = new FindAllRoleUseCase(transactionManager, roleRepo)
 
     const app = new Hono()
 
-    app.route('/rbac', createRbacHandler({ createRole }))
+    app.route('/rbac', createRbacHandler({ createRole, findAllRole }))
 
     app.get('/health', c => c.json({ status: 'ok', service: 'user-service' }))
     app.notFound(c => c.json({ error: 'Not Found' }, 404))

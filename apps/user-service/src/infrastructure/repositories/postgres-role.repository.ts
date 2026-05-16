@@ -1,7 +1,8 @@
-import { NewRole, roles } from '@db/schema/roles'
+import { CreateRoleDto, FilterRoleDto } from '@application/dtos/role.dto'
+import { roles } from '@db/schema/roles'
 import { Role, RoleWithPermissions } from '@domain/entities/role.entity'
 import { IRoleMapper } from '@domain/interfaces/role.mapper.interface'
-import { IRoleRepository, RoleFilters } from '@domain/interfaces/role.repository.interface'
+import { IRoleRepository } from '@domain/interfaces/role.repository.interface'
 import { DatabaseError } from '@shared/errors/database.error'
 import { Database, Tx } from '@shared/types/database'
 import { eq } from 'drizzle-orm'
@@ -15,7 +16,7 @@ export class PostgresRoleRepository implements IRoleRepository {
         this.mapper = mapper
     }
 
-    async create(data: NewRole, tx?: Tx): Promise<Role> {
+    async create(data: CreateRoleDto, tx?: Tx): Promise<Role> {
         try {
             const client = tx ?? this.db
 
@@ -31,7 +32,7 @@ export class PostgresRoleRepository implements IRoleRepository {
         }
     }
 
-    async findAll(filters?: RoleFilters, tx?: Tx): Promise<Role[]> {
+    async findAll(filters?: FilterRoleDto, tx?: Tx): Promise<Role[]> {
         try {
             const client = tx ?? this.db
 
@@ -48,7 +49,7 @@ export class PostgresRoleRepository implements IRoleRepository {
         }
     }
 
-    async findAllWithPermissions(filters?: RoleFilters, tx?: Tx): Promise<RoleWithPermissions[]> {
+    async findAllWithPermissions(filters?: FilterRoleDto, tx?: Tx): Promise<RoleWithPermissions[]> {
         try {
             const client = tx ?? this.db
 
