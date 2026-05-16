@@ -1,23 +1,24 @@
 import { baseEnvSchema } from '@repo/config'
-import { z } from 'zod'
+import vine from '@vinejs/vine'
 
-const envSchema = baseEnvSchema.extend({
-    SERVICE_NAME: z.literal('user-service').default('user-service'),
+const envSchema = vine.create({
+    ...baseEnvSchema.getProperties(),
+    SERVICE_NAME: vine.string().parse(value => value ?? 'user-service'),
 
     // PostgreSQL
-    POSTGRES_HOST: z.string().default('localhost'),
-    POSTGRES_USER: z.string().min(1),
-    POSTGRES_PASS: z.string().min(1),
-    POSTGRES_DB: z.string().min(1),
+    POSTGRES_HOST: vine.string().parse(value => value ?? 'localhost'),
+    POSTGRES_USER: vine.string().minLength(1),
+    POSTGRES_PASS: vine.string().minLength(1),
+    POSTGRES_DB: vine.string().minLength(1),
 })
 
-const parsedEnv = envSchema.safeParse(Bun.env)
+const [error, result] = await envSchema.tryValidate(Bun.env)
 
-if (!parsedEnv.success) {
+if (error) {
     console.error('Invalid environment variables:')
-    console.error(parsedEnv.error.issues)
+    console.error(error.messages)
     process.exit(1)
 }
 
-export const env = parsedEnv.data
+export const env = result
 export type Env = typeof env
